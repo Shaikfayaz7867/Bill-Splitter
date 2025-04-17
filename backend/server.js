@@ -173,7 +173,6 @@ const expenseRoutes = require('./routes/expenses');
 const settlementRoutes = require('./routes/settlements');
 
 // Mount API routes
-app.use('/api/users', require('./routes/users'));
 app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
