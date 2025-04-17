@@ -5,7 +5,6 @@ const connectDB = require('./config/db');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const settlementRoutes = require('./routes/settlements');
 
 // Load environment variables
 dotenv.config();
@@ -174,14 +173,9 @@ const expenseRoutes = require('./routes/expenses');
 const settlementRoutes = require('./routes/settlements');
 
 // Mount API routes
+app.use('/api/users', require('./routes/users'));
 app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
-app.use('/api/settlements', settlementRoutes);
-
-// Routes
-app.use('/api/users', require('./routes/users'));
-app.use('/api/expenses', require('./routes/expenses'));
-app.use('/api/groups', require('./routes/groups'));
 app.use('/api/settlements', settlementRoutes);
 
 // Error handling middleware
