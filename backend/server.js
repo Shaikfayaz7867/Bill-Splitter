@@ -37,8 +37,14 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Bill Splitter API is running',
     version: '1.0.0',
-    endpoints: ['/api/groups', '/api/expenses'],
-    docs: '/api/debug/routes',
+    endpoints: [
+      '/api/groups',
+      '/api/expenses',
+      '/api/settlements',
+      '/api/test',
+      '/api/system/status',
+      '/api/debug/routes'
+    ],
     status: 'ok'
   });
 });
@@ -159,10 +165,12 @@ console.log('Registering routes...');
 // Import routes
 const groupRoutes = require('./routes/groups');
 const expenseRoutes = require('./routes/expenses');
+const settlementRoutes = require('./routes/settlements');
 
 // Mount API routes
 app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/settlements', settlementRoutes);
 
 // Enhanced global error handler middleware with more detailed errors
 app.use((err, req, res, next) => {

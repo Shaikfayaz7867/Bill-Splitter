@@ -16,6 +16,25 @@ const router = express.Router();
 // EXPENSE ROUTES
 // ============================================
 
+// Get all expenses (no groupId filter)
+router.get('/', async (req, res) => {
+  try {
+    // Find all expenses, limited to most recent 100 for performance
+    const expenses = await require('../models/Expense').find()
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+    
+    res.json(expenses);
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch expenses',
+      error: err.message
+    });
+  }
+});
+
 // Create a new expense
 router.post('/', addExpense);
 
@@ -32,7 +51,7 @@ router.delete('/:id', deleteExpense);
 router.get('/:groupId', getExpenses);
 
 // ============================================
-// SETTLEMENT ROUTES
+// SETTLEMENT ROUTES - KEEPING FOR COMPATIBILITY
 // ============================================
 
 // Get all settlements for a group
