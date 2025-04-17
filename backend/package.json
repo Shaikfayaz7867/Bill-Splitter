@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'Build step completed'",
+    "test-db": "node test-db.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -14,5 +16,8 @@
     "mongoose": "^8.13.2",
     "nodemailer": "^6.10.1",
     "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

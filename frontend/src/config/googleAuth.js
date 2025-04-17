@@ -13,7 +13,17 @@
  */
 
 // Get the client ID from environment variables
-export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+// Validate client ID
+if (!clientId || clientId === 'your-google-client-id') {
+  console.error(
+    'Google Client ID not configured properly. Please set VITE_GOOGLE_CLIENT_ID in your .env file ' +
+    'or directly in .env.production for production builds.'
+  );
+}
+
+export const GOOGLE_CLIENT_ID = clientId;
 
 // Google OAuth scopes
 export const GOOGLE_SCOPES = ['email', 'profile'];

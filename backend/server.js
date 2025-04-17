@@ -19,7 +19,7 @@ console.log('Server port:', PORT);
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, 'https://your-netlify-app.netlify.app'] 
+    ? ['https://bill-splitter-shaik.netlify.app', process.env.FRONTEND_URL, '*'] 
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
@@ -31,6 +31,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Connect to MongoDB
 connectDB();
+
+// Root route handler (important for deployment health checks)
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Bill Splitter API is running',
+    version: '1.0.0',
+    endpoints: ['/api/groups', '/api/expenses'],
+    docs: '/api/debug/routes',
+    status: 'ok'
+  });
+});
 
 // Basic test route
 app.get('/api/test', (req, res) => {
