@@ -5,12 +5,27 @@ const { calculateBalance } = require('../utils/balanceService');
 const { sendSettlementEmail } = require('../utils/emailService');
 const mongoose = require('mongoose');
 
+// Error handling wrapper function to make controllers more consistent
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next))
+    .catch((err) => {
+      console.error('Controller error:', err);
+      if (!res.headersSent) {
+        res.status(err.status || 500).json({
+          success: false,
+          message: err.message || 'An unexpected error occurred',
+          error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+      }
+    });
+};
+
 /**
  * Get all expenses for a group
  * @route GET /api/expenses/:groupId
  * @access Public
  */
-exports.getExpenses = async (req, res) => {
+exports.getExpenses = asyncHandler(async (req, res) => {
   try {
     const groupId = req.params.groupId;
     
@@ -36,7 +51,7 @@ exports.getExpenses = async (req, res) => {
       error: err.message
     });
   }
-};
+});
 
 /**
  * Get a specific expense by ID

@@ -7,15 +7,20 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
-  // Add withCredentials to handle CORS
+  // Set withCredentials based on environment
   withCredentials: false
 });
 
-// Add request interceptor for debugging
+// Add request interceptor for debugging and CORS handling
 api.interceptors.request.use(
   config => {
+    // Log API calls in development
+    if (import.meta.env.DEV) {
+      console.log(`API Call: ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
+    }
     return config;
   },
   error => {
@@ -23,12 +28,18 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Add response interceptor for debugging and error handling
 api.interceptors.response.use(
   response => {
     return response;
   },
   error => {
+    // Log CORS errors for debugging
+    if (error.message === 'Network Error') {
+      console.error('CORS Error or Network Issue:', error);
+      console.log('API URL:', API_URL);
+      console.log('Request was sent to:', error.config?.url);
+    }
     return Promise.reject(error);
   }
 );

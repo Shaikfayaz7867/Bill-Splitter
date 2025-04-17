@@ -3,6 +3,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const mongoose = require('mongoose');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const settlementRoutes = require('./routes/settlements');
 
 // Load environment variables
 dotenv.config();
@@ -16,18 +19,21 @@ console.log('Starting server with debugging enabled...');
 console.log('Node environment:', process.env.NODE_ENV || 'development');
 console.log('Server port:', PORT);
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://bill-splitter-shaik.netlify.app', process.env.FRONTEND_URL, '*'] 
-    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
+// CORS configuration
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
 
-// Increase payload limit for larger requests
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cors(corsOptions));
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(morgan('dev'));
 
 // Connect to MongoDB
 connectDB();
@@ -172,29 +178,27 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 
-// Enhanced global error handler middleware with more detailed errors
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  
-  // Return a more helpful error response
-  res.status(500).json({
+// Routes
+app.use('/api/users', require('./routes/users'));
+app.use('/api/expenses', require('./routes/expenses'));
+app.use('/api/groups', require('./routes/groups'));
+app.use('/api/settlements', settlementRoutes);
+
+// Error handling middleware
+app.use((req, res, next) => {
+  res.status(404).json({
     success: false,
-    message: err.message || 'Server error',
-    error: process.env.NODE_ENV === 'development' ? {
-      stack: err.stack,
-      name: err.name,
-      message: err.message,
-      details: err.details || err.errors || null
-    } : undefined
+    message: 'Resource not found'
   });
 });
 
-// 404 Handler - must be last
-app.use((req, res) => {
-  console.error(`404 Not Found: ${req.method} ${req.originalUrl}`);
-  res.status(404).json({
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  const statusCode = err.statusCode || 500;
+  res.status(statusCode).json({
     success: false,
-    message: `Route not found: ${req.method} ${req.originalUrl}`
+    message: err.message || 'Internal server error',
+    error: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
