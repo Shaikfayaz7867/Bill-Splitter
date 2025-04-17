@@ -1,1 +1,7 @@
- 
+This is a placeholder. For a proper PNG favicon, please:
+
+1. Use an online SVG to PNG converter with the SVG content from favicon.svg
+2. Save the resulting PNG file as favicon.png in the frontend/public directory
+3. Or use any cash/money icon in blue color that matches your branding
+
+Alternatively, you can just rely on the SVG favicon, which is supported by all modern browsers. 
