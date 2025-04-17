@@ -1,0 +1,5 @@
+.logout-hover:hover {
+    background-color: #dc3545; /* Bootstrap's 'danger' red */
+    color: white;
+  }
+  

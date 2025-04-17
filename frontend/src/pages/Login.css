@@ -1,0 +1,93 @@
+/* Login Page Styles */
+.login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+}
+
+/* Card styling */
+.rounded-4 {
+  border-radius: 1rem;
+}
+
+.card.border-0.shadow-lg {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card.border-0.shadow-lg:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Feature icons */
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.feature:hover .feature-icon {
+  transform: scale(1.1);
+}
+
+/* Animation */
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Badge styling */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  transform: translateY(-2px);
+}
+
+/* Google Sign-in button container */
+.login-btn-container {
+  transition: transform 0.3s ease;
+}
+
+.login-btn-container:hover {
+  transform: scale(1.02);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .login-page {
+    padding: 2rem 0;
+  }
+}
+
+/* Footer */
+.footer-sticky {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+/* App logo */
+.app-logo svg {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
+  transition: transform 0.3s ease;
+}
+
+.app-logo:hover svg {
+  transform: scale(1.05);
+} 
