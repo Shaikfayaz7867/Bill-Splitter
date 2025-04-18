@@ -10,5 +10,8 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "path-to-regexp": "^6.2.1"
   }
-} 
+}

@@ -20,13 +20,39 @@ console.log('Server port:', PORT);
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests, etc)
+    if (!origin) return callback(null, true);
+    
+    // Define allowed origins
+    const allowedOrigins = [
+      process.env.FRONTEND_URL || 'http://localhost:3000',
+      'http://localhost:5173', // Vite's default dev port
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
+// Log CORS configuration for debugging
+console.log('CORS configuration:', {
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+  env: process.env.NODE_ENV || 'development'
+});
+
 app.use(cors(corsOptions));
+
+// Handle pre-flight OPTIONS requests
+app.options('*', cors(corsOptions));
 
 // Middleware
 app.use(express.json());

@@ -51,16 +51,7 @@ router.delete('/:id', deleteExpense);
 router.get('/:groupId', getExpenses);
 
 // ============================================
-// SETTLEMENT ROUTES - KEEPING FOR COMPATIBILITY
+// SETTLEMENT ROUTES - MOVED TO settlements.js
 // ============================================
-
-// Get all settlements for a group
-router.get('/settlements/:groupId', getSettlements);
-
-// Mark a settlement as complete
-router.put('/settlements/:id/complete', completeSettlement);
-
-// Send settlement notifications to group members
-router.post('/send-settlements/:groupId', sendSettlementNotifications);
 
 module.exports = router;

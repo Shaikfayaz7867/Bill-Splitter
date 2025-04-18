@@ -10,8 +10,8 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  // Set withCredentials based on environment
-  withCredentials: false
+  // Update withCredentials to true to match backend CORS config
+  withCredentials: true
 });
 
 // Add request interceptor for debugging and CORS handling
@@ -241,7 +241,7 @@ export const expenseService = {
   // Get settlements
   getSettlements: async (groupId) => {
     try {
-      const response = await api.get(`/expenses/settlements/${groupId}`);
+      const response = await api.get(`/settlements/${groupId}`);
       return response.data || [];
     } catch (error) {
       return [];
@@ -251,7 +251,7 @@ export const expenseService = {
   // Complete settlement
   completeSettlement: async (settlementId) => {
     try {
-      const response = await api.put(`/expenses/settlements/${settlementId}/complete`);
+      const response = await api.put(`/settlements/${settlementId}/complete`);
       return response.data;
     } catch (error) {
       throw error;
@@ -261,7 +261,7 @@ export const expenseService = {
   // Send settlement notifications
   sendSettlementNotifications: async (groupId) => {
     try {
-      const response = await api.post(`/expenses/send-settlements/${groupId}`);
+      const response = await api.post(`/settlements/send/${groupId}`);
       return response.data;
     } catch (error) {
       throw error;
