@@ -4,6 +4,8 @@ import { groupService, expenseService } from '../services/api';
 const BalanceView = ({ group, expenses, onRefresh }) => {
   const [loading, setLoading] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [summarySent, setSummarySent] = useState(false);
+  const [notificationsSent, setNotificationsSent] = useState(false);
 
   // Handle sending settlement notifications
   const handleSendSettlementEmails = async () => {
@@ -17,6 +19,8 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
         type: 'success',
         message: 'Settlement notifications sent successfully!'
       });
+      
+      setNotificationsSent(true);
       
       // Optional: refresh data after sending emails
       if (onRefresh) {
@@ -45,6 +49,8 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
         type: 'success',
         message: 'Balance summary emails sent successfully!'
       });
+      
+      setSummarySent(true);
       
       // Optional: refresh data after sending emails
       if (onRefresh) {
@@ -173,7 +179,7 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
           <div className="col-sm-6 d-flex flex-column justify-content-center">
             <div className="d-grid gap-2 mt-2 mt-sm-0">
               <button 
-                className="btn btn-outline-primary" 
+                className={`btn ${summarySent ? 'btn-success' : 'btn-outline-primary'}`}
                 onClick={handleSendBalanceSummary}
                 disabled={loading}
               >
@@ -184,7 +190,7 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
                     <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
                   </svg>
                 )}
-                Send Summary to Everyone
+                {summarySent ? 'Summary Sent to Everyone' : 'Send Summary to Everyone'}
               </button>
             </div>
           </div>
@@ -239,7 +245,7 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="mb-0">How to Settle Up</h6>
               <button 
-                className="btn btn-primary btn-sm" 
+                className={`btn btn-sm ${notificationsSent ? 'btn-success' : 'btn-primary'}`}
                 onClick={handleSendSettlementEmails}
                 disabled={loading}
               >
@@ -250,7 +256,7 @@ const BalanceView = ({ group, expenses, onRefresh }) => {
                     <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-1a1 1 0 0 0-1 1v.217l7 4.2 7-4.2V4a1 1 0 0 0-1-1H2Zm13 2.383-4.708 2.825L15 11.105V5.383Zm-.034 6.876-5.64-3.471L8 9.583l-1.326-.795-5.64 3.47A1 1 0 0 0 2 13h12a1 1 0 0 0 .966-.741ZM1 11.105l4.708-2.897L1 5.383v5.722Z"/>
                   </svg>
                 )}
-                Send Settlement Notifications
+                {notificationsSent ? 'Notifications Sent' : 'Send Settlement Notifications'}
               </button>
             </div>
             <ul className="list-group">

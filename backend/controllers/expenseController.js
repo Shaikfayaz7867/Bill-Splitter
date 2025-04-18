@@ -360,18 +360,70 @@ exports.completeSettlement = async (req, res) => {
       return res.status(404).json({ msg: 'Settlement not found' });
     }
     
+    // Get the group to find members and their emails
+    const group = await Group.findById(settlement.groupId);
+    if (!group) {
+      return res.status(404).json({ msg: 'Group not found' });
+    }
+    
     // Update settlement
     settlement.status = 'completed';
     settlement.completedAt = new Date();
     
     await settlement.save();
     
-    res.json(settlement);
+    // Send email notification to all group members
+    const emailResults = [];
+    
+    // Loop through each group member
+    for (const member of group.members) {
+      // Skip if no email
+      if (!member.email) continue;
+      
+      // Send email notification
+      try {
+        const emailResult = await sendSettlementEmail({
+          to: member.email,
+          subject: `Bill Splitter - Settlement Completed in ${group.name}`,
+          groupName: group.name,
+          fromPerson: settlement.from,
+          toPerson: settlement.to,
+          amount: settlement.amount,
+          isCompletionNotification: true // Flag for customizing the email template
+        });
+        
+        emailResults.push({
+          member: member.name,
+          success: emailResult.success,
+          error: emailResult.error
+        });
+      } catch (emailErr) {
+        console.error(`Error sending email to ${member.name}:`, emailErr);
+        emailResults.push({
+          member: member.name,
+          success: false,
+          error: emailErr.message
+        });
+      }
+    }
+    
+    // Return the updated settlement along with email results
+    res.json({
+      settlement,
+      emailsSent: emailResults.filter(r => r.success).length,
+      totalEmails: emailResults.length,
+      emailResults
+    });
   } catch (err) {
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Settlement not found' });
     }
-    res.status(500).send('Server Error');
+    console.error('Error completing settlement:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Server Error',
+      error: err.message
+    });
   }
 };
 

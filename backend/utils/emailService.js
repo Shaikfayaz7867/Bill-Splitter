@@ -44,7 +44,7 @@ const createTransporter = () => {
  * @param {Object} options - Email options
  * @returns {Object} - Result with success status and any error details
  */
-const sendSettlementEmail = async ({ to, subject, userName, owedTo, amount, groupName }) => {
+const sendSettlementEmail = async ({ to, subject, groupName, fromPerson, toPerson, amount, isCompletionNotification = false }) => {
   try {
     const transporter = createTransporter();
     if (!transporter && process.env.NODE_ENV !== 'production') {
@@ -56,15 +56,49 @@ const sendSettlementEmail = async ({ to, subject, userName, owedTo, amount, grou
       };
     }
     
-    const htmlContent = settledEmailTemplate({
-      userName,
-      owedTo,
-      amount,
-      groupName
-    });
+    // Decide which template to use based on whether this is a completion notification
+    let htmlContent;
+    
+    if (isCompletionNotification) {
+      // Settlement completion notification template
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+          <h2 style="color: #4a5568;">Settlement Completed</h2>
+          <p>Hello,</p>
+          <p>A settlement in your group <strong>${groupName}</strong> has been marked as completed:</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>${fromPerson}</strong> has paid <strong>${toPerson}</strong> the amount of <strong>$${parseFloat(amount).toFixed(2)}</strong>.</p>
+          </div>
+          
+          <p>Thank you for using Bill Splitter!</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #718096; font-size: 12px;">This is an automated message from Bill Splitter. Please do not reply to this email.</p>
+        </div>
+      `;
+    } else {
+      // Regular settlement notification template
+      htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+          <h2 style="color: #4a5568;">Payment Due</h2>
+          <p>Hello ${fromPerson},</p>
+          <p>According to the expenses in <strong>${groupName}</strong>, you need to pay:</p>
+          
+          <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Amount:</strong> $${parseFloat(amount).toFixed(2)}</p>
+            <p style="margin: 5px 0;"><strong>To:</strong> ${toPerson}</p>
+          </div>
+          
+          <p>Please make this payment at your earliest convenience and mark it as complete in the app.</p>
+          <p>Thank you for using Bill Splitter!</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #718096; font-size: 12px;">This is an automated message from Bill Splitter. Please do not reply to this email.</p>
+        </div>
+      `;
+    }
     
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: `${process.env.EMAIL_FROM_NAME || 'Bill Splitter'} <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html: htmlContent
@@ -78,6 +112,7 @@ const sendSettlementEmail = async ({ to, subject, userName, owedTo, amount, grou
       info
     };
   } catch (error) {
+    console.error('Error sending settlement email:', error);
     return {
       success: false,
       error: error.message
