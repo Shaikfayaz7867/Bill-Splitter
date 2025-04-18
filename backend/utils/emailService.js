@@ -46,20 +46,40 @@ const createTransporter = () => {
  */
 const sendSettlementEmail = async ({ to, subject, groupName, fromPerson, toPerson, amount, isCompletionNotification = false }) => {
   try {
+    console.log('sendSettlementEmail called with options:', { 
+      to, 
+      subject, 
+      groupName, 
+      fromPerson, 
+      toPerson, 
+      amount: parseFloat(amount), 
+      isCompletionNotification 
+    });
+    
     const transporter = createTransporter();
-    if (!transporter && process.env.NODE_ENV !== 'production') {
-      // Return a fake success response in development when no email is configured
-      return {
-        success: true,
-        messageId: 'dev-mode-no-email-sent',
-        info: 'Email sending skipped in development mode'
-      };
+    
+    if (!transporter) {
+      console.log('No email transporter created');
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('In development mode - skipping actual email sending');
+        // Return a fake success response in development when no email is configured
+        return {
+          success: true,
+          messageId: 'dev-mode-no-email-sent',
+          info: 'Email sending skipped in development mode'
+        };
+      } else {
+        throw new Error('Failed to create email transporter in production mode');
+      }
     }
+    
+    console.log('Email transporter created successfully');
     
     // Decide which template to use based on whether this is a completion notification
     let htmlContent;
     
     if (isCompletionNotification) {
+      console.log('Using completion notification template');
       // Settlement completion notification template
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
@@ -77,6 +97,7 @@ const sendSettlementEmail = async ({ to, subject, groupName, fromPerson, toPerso
         </div>
       `;
     } else {
+      console.log('Using regular payment notification template');
       // Regular settlement notification template
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
@@ -104,13 +125,28 @@ const sendSettlementEmail = async ({ to, subject, groupName, fromPerson, toPerso
       html: htmlContent
     };
     
-    const info = await transporter.sendMail(mailOptions);
+    console.log('Sending email with options:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject
+    });
     
-    return {
-      success: true,
-      messageId: info.messageId,
-      info
-    };
+    try {
+      const info = await transporter.sendMail(mailOptions);
+      console.log('Email sent successfully:', {
+        messageId: info.messageId,
+        response: info.response
+      });
+      
+      return {
+        success: true,
+        messageId: info.messageId,
+        info
+      };
+    } catch (sendError) {
+      console.error('Error in transporter.sendMail:', sendError);
+      throw sendError; // Re-throw to be caught by the outer try/catch
+    }
   } catch (error) {
     console.error('Error sending settlement email:', error);
     return {

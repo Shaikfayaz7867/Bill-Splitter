@@ -6,6 +6,7 @@ const SettlementsList = ({ groupId, onRefresh }) => {
   const [loading, setLoading] = useState(true);
   const [completingId, setCompletingId] = useState(null);
   const [error, setError] = useState(null);
+  const [notification, setNotification] = useState(null);
   
   useEffect(() => {
     fetchSettlements();
@@ -29,8 +30,20 @@ const SettlementsList = ({ groupId, onRefresh }) => {
   const handleMarkComplete = async (settlementId) => {
     try {
       setCompletingId(settlementId);
+      setError(null);
       
-      await expenseService.completeSettlement(settlementId);
+      // Call the API to mark settlement as complete
+      const response = await expenseService.completeSettlement(settlementId);
+      
+      // Show success notification with email details
+      const emailsSent = response.emailsSent || 0;
+      const totalEmails = response.totalEmails || 0;
+      
+      // Set a success notification
+      setNotification({
+        type: 'success',
+        message: `Settlement marked as complete! ${emailsSent} of ${totalEmails} email notifications sent.`
+      });
       
       // Update the local state
       setSettlements(settlements.map(settlement => 
@@ -116,6 +129,26 @@ const SettlementsList = ({ groupId, onRefresh }) => {
     <div className="card">
       <div className="card-body">
         <h5 className="card-title mb-4">Settlements</h5>
+        
+        {/* Notification alert */}
+        {notification && (
+          <div className={`alert alert-${notification.type} alert-dismissible fade show mb-3`} role="alert">
+            {notification.message}
+            <button type="button" className="btn-close" aria-label="Close" onClick={() => setNotification(null)}></button>
+          </div>
+        )}
+        
+        {error && (
+          <div className="alert alert-danger" role="alert">
+            {error}
+            <button 
+              className="btn btn-sm btn-outline-danger ms-2" 
+              onClick={fetchSettlements}
+            >
+              Try Again
+            </button>
+          </div>
+        )}
         
         {pendingSettlements.length > 0 && (
           <>

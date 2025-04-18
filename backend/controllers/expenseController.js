@@ -2,7 +2,7 @@ const Expense = require('../models/Expense');
 const Group = require('../models/Group');
 const Settlement = require('../models/Settlement');
 const { calculateBalance } = require('../utils/balanceService');
-const { sendSettlementEmail } = require('../utils/emailService');
+const { sendSettlementEmail, sendBalanceSummaryEmail } = require('../utils/emailService');
 const mongoose = require('mongoose');
 
 // Error handling wrapper function to make controllers more consistent
@@ -353,32 +353,47 @@ exports.sendSettlementNotifications = async (req, res) => {
  */
 exports.completeSettlement = async (req, res) => {
   try {
+    console.log('Starting settlement completion process for ID:', req.params.id);
+    
     // Find settlement
     const settlement = await Settlement.findById(req.params.id);
     
     if (!settlement) {
+      console.log('Settlement not found for ID:', req.params.id);
       return res.status(404).json({ msg: 'Settlement not found' });
     }
+    
+    console.log('Found settlement:', settlement);
     
     // Get the group to find members and their emails
     const group = await Group.findById(settlement.groupId);
     if (!group) {
+      console.log('Group not found for ID:', settlement.groupId);
       return res.status(404).json({ msg: 'Group not found' });
     }
+    
+    console.log('Found group with', group.members.length, 'members');
     
     // Update settlement
     settlement.status = 'completed';
     settlement.completedAt = new Date();
     
     await settlement.save();
+    console.log('Settlement updated to completed status');
     
     // Send email notification to all group members
+    console.log('Starting to send email notifications to group members');
     const emailResults = [];
     
     // Loop through each group member
     for (const member of group.members) {
       // Skip if no email
-      if (!member.email) continue;
+      if (!member.email) {
+        console.log('Skipping member without email:', member.name);
+        continue;
+      }
+      
+      console.log('Sending email notification to:', member.name, member.email);
       
       // Send email notification
       try {
@@ -391,6 +406,8 @@ exports.completeSettlement = async (req, res) => {
           amount: settlement.amount,
           isCompletionNotification: true // Flag for customizing the email template
         });
+        
+        console.log('Email sending result for', member.name, ':', emailResult.success ? 'Success' : 'Failed');
         
         emailResults.push({
           member: member.name,
@@ -407,6 +424,11 @@ exports.completeSettlement = async (req, res) => {
       }
     }
     
+    console.log('Email sending complete. Results:', {
+      sent: emailResults.filter(r => r.success).length,
+      total: emailResults.length
+    });
+    
     // Return the updated settlement along with email results
     res.json({
       settlement,
@@ -415,6 +437,7 @@ exports.completeSettlement = async (req, res) => {
       emailResults
     });
   } catch (err) {
+    console.error('Error in completeSettlement:', err);
     if (err.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Settlement not found' });
     }
