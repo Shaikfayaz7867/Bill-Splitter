@@ -18,37 +18,34 @@ console.log('Starting server with debugging enabled...');
 console.log('Node environment:', process.env.NODE_ENV || 'development');
 console.log('Server port:', PORT);
 
-// CORS configuration
-const corsOptions = {
-  origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl requests, etc)
-    if (!origin) return callback(null, true);
-    
-    // Define allowed origins
-    const allowedOrigins = [
+// CORS configuration - Simplified for reliability
+let corsOptions;
+if (process.env.NODE_ENV === 'production') {
+  // In production, allow requests from all origins
+  corsOptions = {
+    origin: true, // Allow all origins
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  };
+  console.log('CORS: Production mode - allowing all origins');
+} else {
+  // In development, only allow specific origins
+  corsOptions = {
+    origin: [
       process.env.FRONTEND_URL || 'http://localhost:3000',
-      'http://localhost:5173', // Vite's default dev port
+      'http://localhost:5173',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173'
-    ];
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
-};
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  };
+  console.log('CORS: Development mode - restricted origins');
+}
 
-// Log CORS configuration for debugging
-console.log('CORS configuration:', {
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
-  env: process.env.NODE_ENV || 'development'
-});
-
+// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Handle pre-flight OPTIONS requests
@@ -212,6 +209,25 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+  // Special handling for CORS errors
+  if (err.message.includes('CORS')) {
+    console.error('CORS Error:', {
+      origin: req.headers.origin,
+      method: req.method,
+      path: req.path,
+      headers: req.headers,
+      error: err.message
+    });
+    
+    return res.status(403).json({
+      success: false,
+      message: 'CORS error - Origin not allowed',
+      origin: req.headers.origin,
+      allowedOrigins: process.env.NODE_ENV === 'production' ? 'All origins in production' : 'See server logs'
+    });
+  }
+
+  // General error handling
   console.error('Global error handler:', err);
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
@@ -223,7 +239,12 @@ app.use((err, req, res, next) => {
 
 // Start server
 app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT} - Environment: ${process.env.NODE_ENV}`);
+  console.log(`Access the API at http://localhost:${PORT}`);
+  
   if (process.env.NODE_ENV === 'production') {
-    console.log(`Production server running on port ${PORT}`);
+    console.log(`Production mode enabled - CORS is configured to accept all origins`);
+  } else {
+    console.log(`Development mode - CORS is restricted to allowed origins`);
   }
 });
