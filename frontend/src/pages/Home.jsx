@@ -61,8 +61,6 @@ const Home = () => {
     const icons = {
       trip: 'bi-airplane',
       home: 'bi-house',
-      event: 'bi-calendar-event',
-      project: 'bi-briefcase',
       other: 'bi-three-dots'
     };
     return icons[category] || icons.other;

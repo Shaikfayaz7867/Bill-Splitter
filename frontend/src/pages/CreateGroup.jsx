@@ -79,8 +79,6 @@ const CreateGroup = () => {
   const categories = [
     { value: 'trip', label: 'Trip/Travel' },
     { value: 'home', label: 'Home/Apartment' },
-    { value: 'event', label: 'Event' },
-    { value: 'project', label: 'Project' },
     { value: 'other', label: 'Other' }
   ];
 
